@@ -1,4 +1,4 @@
-# Arduino-Based Heart Beat Sensor �
+# Arduino-Based Heart Beat Sensor 🩺🖥️
 
 <!-- ![Project Banner](assets/project_banner.png) Add a banner image if available -->
 
@@ -80,13 +80,17 @@ Here’s what you’ll need to build this project:
     View the real-time heart rate in the console or GUI.
 
 # How It Works
-## Data Acquisition: The PPG sensor detects blood volume changes in the skin and sends analog signals to the Arduino.
+## Data Acquisition:
+The PPG sensor detects blood volume changes in the skin and sends analog signals to the Arduino.
 
-## Signal Processing: The Arduino converts the analog signal to digital and sends it to the computer via serial communication.
+## Signal Processing: 
+The Arduino converts the analog signal to digital and sends it to the computer via serial communication.
 
-## Heart Rate Calculation: The Python script processes the PPG data, filters noise, detects peaks, and calculates the heart rate.
+## Heart Rate Calculation: 
+The Python script processes the PPG data, filters noise, detects peaks, and calculates the heart rate.
 
-## Real-Time Display: The heart rate is displayed in real-time on the console or a graphical interface.
+## Real-Time Display: 
+The heart rate is displayed in real-time on the console or a graphical interface.
 
 # Code Overview
 ### Arduino Code (arduino/heart_rate_sensor.ino)
