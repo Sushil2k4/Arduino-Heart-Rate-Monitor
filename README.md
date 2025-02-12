@@ -13,9 +13,11 @@ The Python code provided simulates the PPG data acquisition and processing. In a
    git clone https://github.com/your-username/arduino-heart-beat-sensor.git
    ```
 2. Navigate to project directory:
-    ```cd arduino-heart-beat-sensor
+    ```bash
+    cd arduino-heart-beat-sensor
     ```
 3. Run the Python script:
-    ```python heart_rate_monitor.py
+    ```bash
+    python heart_rate_monitor.py
     ```
     
