@@ -2,9 +2,10 @@ import time
 import serial
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
 
 # Serial communication setup
-ser = serial.Serial('COM3', 9600)  # Replace 'COM3' with your Arduino's port
+ser = serial.Serial('COM3', 9600, timeout=1)  # Added timeout for better handling
 time.sleep(2)  # Allow time for serial connection to establish
 
 # Variables for heart rate calculation
@@ -18,19 +19,23 @@ def moving_average(data, window_size=5):
         return data  # Return original data if not enough samples
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
-# Function to calculate heart rate
+# Function to calculate heart rate using adaptive peak detection
 def calculate_heart_rate(ppg_data):
+    if len(ppg_data) < sampling_rate * time_window:
+        return 0  # Not enough data points to calculate heart rate
     smoothed_ppg = moving_average(ppg_data)
-    peaks = np.where(np.diff(np.sign(np.diff(smoothed_ppg))) < 0)[0] + 1
+    peaks, _ = find_peaks(smoothed_ppg, distance=sampling_rate/2, height=np.mean(smoothed_ppg))
     if len(peaks) > 1:
-        heart_rate = len(peaks) / (time_window / 60)  # Beats per minute
+        heart_rate = (len(peaks) / time_window) * 60  # Beats per minute
         return heart_rate
     return 0
 
-# Real-time heart rate monitoring
+# Real-time heart rate monitoring with plotting
 try:
     print("Starting heart rate monitoring...")
     start_time = time.time()
+    plt.ion()  # Enable interactive mode for real-time plotting
+    fig, ax = plt.subplots()
     while True:
         if ser.in_waiting > 0:
             try:
@@ -43,6 +48,17 @@ try:
             if time.time() - start_time >= time_window:
                 heart_rate = calculate_heart_rate(ppg_values)
                 print(f"Heart Rate: {heart_rate:.2f} BPM")
+                
+                # Update real-time plot
+                ax.clear()
+                ax.plot(ppg_values, label='PPG Signal')
+                ax.set_title("PPG Signal Over Time")
+                ax.set_xlabel("Samples")
+                ax.set_ylabel("PPG Value")
+                ax.legend()
+                plt.draw()
+                plt.pause(0.01)
+                
                 ppg_values = []  # Reset PPG values for the next window
                 start_time = time.time()
 
@@ -50,3 +66,5 @@ except KeyboardInterrupt:
     print("Heart rate monitoring stopped.")
 finally:
     ser.close()  # Close serial connection
+    plt.ioff()
+    plt.show()  # Show final plot
