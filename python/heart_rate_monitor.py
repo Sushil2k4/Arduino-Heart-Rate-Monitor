@@ -3,6 +3,7 @@ import serial
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
+import csv
 
 # Serial communication setup
 ser = serial.Serial('COM3', 9600, timeout=1)  # Added timeout for better handling
@@ -30,12 +31,24 @@ def calculate_heart_rate(ppg_data):
         return heart_rate
     return 0
 
+# Function to log data to a CSV file
+def log_data(ppg_values, heart_rate):
+    with open("heart_rate_data.csv", mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([time.strftime("%Y-%m-%d %H:%M:%S"), heart_rate, *ppg_values])
+
 # Real-time heart rate monitoring with plotting
 try:
     print("Starting heart rate monitoring...")
     start_time = time.time()
     plt.ion()  # Enable interactive mode for real-time plotting
     fig, ax = plt.subplots()
+    
+    # Create CSV file with headers
+    with open("heart_rate_data.csv", mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Timestamp", "Heart Rate (BPM)", "PPG Values"])
+    
     while True:
         if ser.in_waiting > 0:
             try:
@@ -48,6 +61,7 @@ try:
             if time.time() - start_time >= time_window:
                 heart_rate = calculate_heart_rate(ppg_values)
                 print(f"Heart Rate: {heart_rate:.2f} BPM")
+                log_data(ppg_values, heart_rate)  # Log data to CSV
                 
                 # Update real-time plot
                 ax.clear()
