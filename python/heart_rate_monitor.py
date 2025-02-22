@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 import csv
+import tkinter as tk
+from tkinter import messagebox
 
 # Serial communication setup
 ser = serial.Serial('COM3', 9600, timeout=1)  # Added timeout for better handling
@@ -13,6 +15,7 @@ time.sleep(2)  # Allow time for serial connection to establish
 ppg_values = []
 time_window = 10  # Time window in seconds for heart rate calculation
 sampling_rate = 10  # Samples per second
+threshold_heart_rate = 100  # Warning threshold for high heart rate
 
 # Moving Average Filter
 def moving_average(data, window_size=5):
@@ -36,6 +39,14 @@ def log_data(ppg_values, heart_rate):
     with open("heart_rate_data.csv", mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([time.strftime("%Y-%m-%d %H:%M:%S"), heart_rate, *ppg_values])
+
+# Function to display alert if heart rate exceeds threshold
+def check_heart_rate(heart_rate):
+    if heart_rate > threshold_heart_rate:
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showwarning("Warning", f"High Heart Rate Detected: {heart_rate:.2f} BPM")
+        root.destroy()
 
 # Real-time heart rate monitoring with plotting
 try:
@@ -62,6 +73,7 @@ try:
                 heart_rate = calculate_heart_rate(ppg_values)
                 print(f"Heart Rate: {heart_rate:.2f} BPM")
                 log_data(ppg_values, heart_rate)  # Log data to CSV
+                check_heart_rate(heart_rate)  # Check if heart rate exceeds threshold
                 
                 # Update real-time plot
                 ax.clear()
