@@ -12,9 +12,16 @@ ppg_values = []
 time_window = 10  # Time window in seconds for heart rate calculation
 sampling_rate = 10  # Samples per second
 
+# Moving Average Filter
+def moving_average(data, window_size=5):
+    if len(data) < window_size:
+        return data  # Return original data if not enough samples
+    return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
+
 # Function to calculate heart rate
 def calculate_heart_rate(ppg_data):
-    peaks = np.where(np.diff(np.sign(np.diff(ppg_data))) < 0)[0] + 1
+    smoothed_ppg = moving_average(ppg_data)
+    peaks = np.where(np.diff(np.sign(np.diff(smoothed_ppg))) < 0)[0] + 1
     if len(peaks) > 1:
         heart_rate = len(peaks) / (time_window / 60)  # Beats per minute
         return heart_rate
@@ -26,8 +33,11 @@ try:
     start_time = time.time()
     while True:
         if ser.in_waiting > 0:
-            ppg_value = int(ser.readline().decode().strip())  # Read PPG value from Arduino
-            ppg_values.append(ppg_value)
+            try:
+                ppg_value = int(ser.readline().decode().strip())  # Read PPG value from Arduino
+                ppg_values.append(ppg_value)
+            except ValueError:
+                continue  # Ignore invalid data
 
             # Process data in time windows
             if time.time() - start_time >= time_window:
